@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
       );
     }
   } catch (error) {
+    console.error("Lỗi khi xử lý đăng nhập:", error);
     return NextResponse.json(
       { error: "Có lỗi xảy ra. Vui lòng thử lại sau." },
       { status: 500 }

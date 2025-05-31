@@ -12,6 +12,16 @@ const nextConfig: NextConfig = {
     });
     return config;
   },
+  images: {
+    domains: [
+      "img.vietqr.io",
+      "ui-avatars.com",
+      "upload.wikimedia.org",
+      "encrypted-tbn0.gstatic.com",
+      "cdn.example.org",
+      "images.example.net",
+    ], // Thêm tất cả các domain tại đây
+  },
 };
 
 export default nextConfig;

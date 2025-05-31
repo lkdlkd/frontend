@@ -3,7 +3,21 @@
 import React from "react";
 import Table from "react-bootstrap/Table";
 
-export default function CardHistory({ historycard = [] }: { historycard: any[] }) {
+interface CardHistoryItem {
+  createdAt: string;
+  type: string;
+  amount: number;
+  serial: string;
+  code: string;
+  real_amount: number;
+  status: string;
+}
+
+export default function CardHistory({
+  historycard = [],
+}: {
+  historycard: CardHistoryItem[];
+}) {
   return (
     <div className="col-md-12">
       <div className="card">

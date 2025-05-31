@@ -2,16 +2,25 @@
 
 import React, { useState } from "react";
 import Table from "react-bootstrap/Table";
-import dynamic from "next/dynamic";
 
-// Import `react-select` chỉ trên client
-const Select = dynamic(() => import("react-select"), { ssr: false });
+interface HistoryItem {
+  _id: string;
+  madon: string;
+  username: string;
+  hanhdong: string;
+  link: string;
+  tienhientai: number;
+  tongtien: number;
+  tienconlai: number;
+  createdAt: string;
+  mota?: string;
+}
 
 interface HistoryProps {
   role: string;
   currentPage: number;
   limit: number;
-  historyData: any[];
+  historyData: HistoryItem[];
   totalPages: number;
 }
 

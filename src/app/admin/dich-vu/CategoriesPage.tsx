@@ -41,6 +41,7 @@ export default function CategoriesPage({ categories: initialCategories = [], pla
             const updatedCategories = [...categories, categoryData];
             setCategories(updatedCategories);
         } catch (error) {
+            console.error("Lỗi khi thêm danh mục:", error);
             Swal.fire("Lỗi", "Không thể thêm danh mục!", "error");
         }
     };
@@ -55,6 +56,7 @@ export default function CategoriesPage({ categories: initialCategories = [], pla
             );
             setCategories(updatedCategories);
         } catch (error) {
+            console.error("Lỗi khi cập nhật danh mục:", error);
             Swal.fire("Lỗi", "Không thể cập nhật danh mục!", "error");
         }
     };
@@ -78,6 +80,7 @@ export default function CategoriesPage({ categories: initialCategories = [], pla
                 const updatedCategories = categories.filter((category) => category._id !== categoryId);
                 setCategories(updatedCategories);
             } catch (error) {
+                console.error("Lỗi khi xóa danh mục:", error);
                 Swal.fire("Lỗi", "Không thể xóa danh mục!", "error");
             }
         }

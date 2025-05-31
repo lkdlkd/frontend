@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import Logout from "./Logout";
 import { User } from "@/types/index";
+import Image from "next/image";
+
 export default function Header({ user }: { user: User | null }) {
   const [showSearch, setShowSearch] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -12,10 +14,9 @@ export default function Header({ user }: { user: User | null }) {
 
   const handleActiveMenu = (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     // Lấy sidebar element
     const sidebar = document.querySelector(".pc-sidebar");
-  
 
     // Toggle class cho sidebar và body
     if (sidebar) {
@@ -33,7 +34,7 @@ export default function Header({ user }: { user: User | null }) {
       ) {
         setShowUserMenu(false);
       }
-      
+
       // Xử lý đóng search dropdown
       if (
         searchRef.current &&
@@ -41,13 +42,13 @@ export default function Header({ user }: { user: User | null }) {
       ) {
         setShowSearch(false);
       }
-      
+
       // Tự động đóng sidebar trên mobile khi click bên ngoài
       if (window.innerWidth <= 1024) {
         const sidebar = document.querySelector(".pc-sidebar");
         if (
-          sidebar && 
-          sidebar.classList.contains("open") && 
+          sidebar &&
+          sidebar.classList.contains("open") &&
           !sidebar.contains(event.target as Node)
         ) {
           sidebar.classList.remove("open");
@@ -65,21 +66,25 @@ export default function Header({ user }: { user: User | null }) {
         {/* [Mobile Media Block] */}
         <div className="me-auto pc-mob-drp">
           <ul className="list-unstyled">
-            <li onClick={handleActiveMenu} className="pc-h-item pc-sidebar-collapse">
+            <li
+              onClick={handleActiveMenu}
+              className="pc-h-item pc-sidebar-collapse"
+            >
               <span className="pc-head-link ms-0" id="sidebar-hide">
                 <i className="ti ti-menu-2"></i>
               </span>
             </li>
-            <li onClick={handleActiveMenu} className="pc-h-item pc-sidebar-popup">
+            <li
+              onClick={handleActiveMenu}
+              className="pc-h-item pc-sidebar-popup"
+            >
               <span className="pc-head-link ms-0" id="mobile-collapse">
                 <i className="ti ti-menu-2"></i>
               </span>
             </li>
 
             <li className="dropdown pc-h-item" ref={searchRef}>
-              <span
-                className="pc-head-link arrow-none m-0 trig-drp-search"
-              >
+              <span className="pc-head-link arrow-none m-0 trig-drp-search">
                 <i className="ph-duotone ph-magnifying-glass icon-search"></i>
               </span>
               {showSearch && (
@@ -100,19 +105,30 @@ export default function Header({ user }: { user: User | null }) {
         {/* [User Block] */}
         <div className="ms-auto">
           <ul>
-            <li className="dropdown pc-h-item header-user-profile" ref={userMenuRef}>
+            <li
+              className="dropdown pc-h-item header-user-profile"
+              ref={userMenuRef}
+            >
               <span className="pc-mtext">
                 <label>Số dư :</label>{" "}
-                {user ? Number(user.balance || 0).toLocaleString("en-US") : "Đang tải..."} đ
+                {user
+                  ? Number(user.balance || 0).toLocaleString("en-US")
+                  : "Đang tải..."}{" "}
+                đ
               </span>
               <span
                 className="pc-head-link dropdown-toggle arrow-none me-0"
                 onClick={() => setShowUserMenu(!showUserMenu)}
               >
-                <img
-                  src={`https://ui-avatars.com/api/?background=random&name=${user?.username || "User"}`}
+                <Image
+                  src={`https://ui-avatars.com/api/?background=random&name=${
+                    user?.username || "User"
+                  }`}
                   alt="user-avatar"
                   className="user-avtar"
+                  width={40}
+                  height={40}
+                  priority
                 />
               </span>
 
@@ -137,34 +153,49 @@ export default function Header({ user }: { user: User | null }) {
                     >
                       <div className="d-flex mb-1">
                         <div className="flex-shrink-0">
-                          <img
-                            src={`https://ui-avatars.com/api/?background=random&name=${user?.username || "User"}`}
+                          <Image
+                            src={`https://ui-avatars.com/api/?background=random&name=${
+                              user?.username || "User"
+                            }`}
                             alt="user-avatar"
                             className="user-avtar wid-35"
+                            width={35}
+                            height={35}
+                            priority
                           />
                         </div>
 
                         <div className="flex-grow-1 ms-3">
-                          <h6 className="mb-1">{user?.username || "Người dùng"}</h6>
+                          <h6 className="mb-1">
+                            {user?.username || "Người dùng"}
+                          </h6>
                           <h6 className="text-primary">
                             <span className="pc-mtext">
                               <label>Số dư :</label>{" "}
-                              {user ? Number(user.balance).toLocaleString("en-US") : "Đang tải..."} đ
+                              {user
+                                ? Number(user.balance).toLocaleString("en-US")
+                                : "Đang tải..."}{" "}
+                              đ
                             </span>
                           </h6>
-                          <span className="badge bg-primary">{user?.capbac || ""}</span>
+                          <span className="badge bg-primary">
+                            {user?.capbac || ""}
+                          </span>
                         </div>
                       </div>
                       <hr className="border-secondary border-opacity-50" />
                       <p className="text-span">Quản lý</p>
                       <a href="/profile" className="dropdown-item">
-                        <i className="ti ti-user me-2 text-muted"></i> Thông tin tài khoản
+                        <i className="ti ti-user me-2 text-muted"></i> Thông
+                        tin tài khoản
                       </a>
                       <a href="/nap-tien" className="dropdown-item">
-                        <i className="ti ti-credit-card me-2 text-muted"></i> Nạp tiền tài khoản
+                        <i className="ti ti-credit-card me-2 text-muted"></i>{" "}
+                        Nạp tiền tài khoản
                       </a>
                       <a href="/lich-su-hoat-dong" className="dropdown-item">
-                        <i className="ti ti-history me-2 text-muted"></i> Lịch sử giao dịch
+                        <i className="ti ti-history me-2 text-muted"></i> Lịch
+                        sử giao dịch
                       </a>
                       <hr className="border-secondary border-opacity-50" />
 

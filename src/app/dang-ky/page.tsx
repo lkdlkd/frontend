@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-const Cookies = require("js-cookie");
 import { register } from "@/utils/api"; // Giả sử bạn đã tạo hàm register trong api service
 
 export default function DangKyPage() {
@@ -27,18 +26,21 @@ export default function DangKyPage() {
 
     try {
       const res = await register({ username, password });
-      if (res.data?.token) {
-        Cookies.set("token", res.data.token, { expires: 7 });
-        router.push("/"); // Chuyển hướng về trang chủ
+      if (res.message) {
+        router.push("/dang-nhap"); // Chuyển hướng đến trang đăng nhập
       } else {
         setError(res.error || "Đăng ký thất bại");
       }
-    } catch (err: any) {
-      setError(
-        err.response?.data?.error || // Lỗi từ API
-        err.message || // Lỗi từ JavaScript
-        "Có lỗi xảy ra. Vui lòng thử lại."
-      );
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(
+          (err as any)?.response?.data?.error || // Lỗi từ API
+          err.message || // Lỗi từ JavaScript
+          "Có lỗi xảy ra. Vui lòng thử lại."
+        );
+      } else {
+        setError("Có lỗi xảy ra. Vui lòng thử lại.");
+      }
     } finally {
       setLoading(false);
     }
@@ -154,6 +156,5 @@ export default function DangKyPage() {
         </div>
       </div>
     </>
-
   );
 }

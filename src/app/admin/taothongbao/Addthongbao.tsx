@@ -7,9 +7,17 @@ import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { Editor } from "@ckeditor/ckeditor5-core";
 
+interface Notification {
+  id: string;
+  title: string;
+  content: string;
+  color: string;
+  createdAt: string;
+}
+
 interface AddthongbaoProps {
   token: string;
-  onAdd: (newNotification: any) => void;
+  onAdd: (newNotification: Notification) => void;
 }
 
 export default function Addthongbao({ token, onAdd }: AddthongbaoProps) {
@@ -30,7 +38,7 @@ export default function Addthongbao({ token, onAdd }: AddthongbaoProps) {
     setLoading(true);
 
     try {
-      const newNotification = await addNotification(formData, token);
+      const newNotification: Notification = await addNotification(formData, token);
       toast.success("Thông báo mới đã được thêm thành công!");
       onAdd(newNotification); // Cập nhật danh sách thông báo
       setFormData({ title: "", content: "", color: "primary" }); // Reset form

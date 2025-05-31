@@ -4,6 +4,7 @@ import { useState } from "react";
 import { addPlatform, updatePlatform, deletePlatform } from "@/utils/api";
 import Swal from "sweetalert2";
 import PlatformModal from "./PlatformModal"; // Modal để thêm/sửa nền tảng
+import Image from "next/image";
 
 // Định nghĩa dữ liệu của một nền tảng
 interface Platform {
@@ -28,9 +29,10 @@ export default function PlatformsPage({ platforms: initialPlatforms, token }: Pl
       await addPlatform(platformData, token);
       Swal.fire("Thành công", "Nền tảng đã được thêm!", "success");
       setIsModalOpen(false);
-      const updatedPlatforms = [...platforms, platformData]; // Cập nhật danh sách nền tảng
+      const updatedPlatforms = [...platforms, platformData];
       setPlatforms(updatedPlatforms);
     } catch (error) {
+      console.error("Lỗi khi thêm nền tảng:", error);
       Swal.fire("Lỗi", "Không thể thêm nền tảng!", "error");
     }
   };
@@ -45,6 +47,7 @@ export default function PlatformsPage({ platforms: initialPlatforms, token }: Pl
       );
       setPlatforms(updatedPlatforms);
     } catch (error) {
+      console.error("Lỗi khi cập nhật nền tảng:", error);
       Swal.fire("Lỗi", "Không thể cập nhật nền tảng!", "error");
     }
   };
@@ -68,6 +71,7 @@ export default function PlatformsPage({ platforms: initialPlatforms, token }: Pl
         const updatedPlatforms = platforms.filter((platform) => platform._id !== platformId);
         setPlatforms(updatedPlatforms);
       } catch (error) {
+        console.error("Lỗi khi xóa nền tảng:", error);
         Swal.fire("Lỗi", "Không thể xóa nền tảng!", "error");
       }
     }
@@ -111,9 +115,14 @@ export default function PlatformsPage({ platforms: initialPlatforms, token }: Pl
                 </td>
                 <td>{platform.name}</td>
                 <td>
-                  <img src={platform.logo} alt={platform.name} style={{ width: "50px", height: "50px" }} />
+                  <Image
+                    src={platform.logo}
+                    alt={platform.name}
+                    width={50}
+                    height={50}
+                    style={{ objectFit: "cover" }}
+                  />
                 </td>
-
               </tr>
             ))
           ) : (

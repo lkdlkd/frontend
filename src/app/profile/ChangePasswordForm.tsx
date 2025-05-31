@@ -55,16 +55,18 @@ export default function ChangePasswordForm({
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Lỗi khi đổi mật khẩu:", error);
-      const errorMessage = error
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Có lỗi xảy ra. Vui lòng thử lại!";
       Swal.fire({
         title: "Lỗi",
         text: errorMessage,
         icon: "error",
         confirmButtonText: "Xác nhận",
       });
-
     } finally {
       setLoading(false);
     }
@@ -109,7 +111,6 @@ export default function ChangePasswordForm({
           </label>
           <input
             placeholder="Nhập mật khẩu mới ít nhất 6 ký tự"
-
             id="confirm_password"
             className="form-control"
             type="password"

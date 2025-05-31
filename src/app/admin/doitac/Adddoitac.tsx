@@ -3,11 +3,22 @@ import { useState, useEffect } from "react";
 import { createSmmPartner, updateSmmPartner } from "@/utils/api";
 import { toast } from "react-toastify";
 
+interface Partner {
+  _id?: string; // ID có thể không tồn tại khi thêm mới
+  name: string;
+  url_api: string;
+  api_token: string;
+  price_update: string;
+  tigia: string;
+  status: "on" | "off";
+  update_price: "on" | "off";
+}
+
 interface AdddoitacProps {
   token: string;
-  onAdd: (newPartner: any) => void;
-  editingPartner?: any; // Đối tác đang chỉnh sửa (nếu có)
-  onUpdate?: (updatedPartner: any) => void; // Hàm cập nhật đối tác
+  onAdd: (newPartner: Partner) => void;
+  editingPartner?: Partner; // Đối tác đang chỉnh sửa (nếu có)
+  onUpdate?: (updatedPartner: Partner) => void; // Hàm cập nhật đối tác
   onClose: () => void; // Đóng modal
 }
 
@@ -18,7 +29,7 @@ export default function Adddoitac({
   onUpdate,
   onClose,
 }: AdddoitacProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Partner>({
     name: "",
     url_api: "",
     api_token: "",
@@ -48,7 +59,7 @@ export default function Adddoitac({
     try {
       if (editingPartner) {
         // Cập nhật đối tác
-        const updatedPartner = await updateSmmPartner(editingPartner._id, formData, token);
+        const updatedPartner = await updateSmmPartner(editingPartner._id!, formData, token);
         toast.success("Đối tác đã được cập nhật thành công!");
         onUpdate?.(updatedPartner); // Cập nhật danh sách đối tác
       } else {
@@ -62,7 +73,7 @@ export default function Adddoitac({
         url_api: "",
         api_token: "",
         price_update: "",
-        tigia: "", // Reset trường tỉ giá
+        tigia: "",
         status: "on",
         update_price: "on",
       }); // Reset form

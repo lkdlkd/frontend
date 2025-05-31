@@ -6,16 +6,18 @@ import { AnimatePresence, motion } from "framer-motion";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
+interface Notification {
+  _id: string;
+  title: string;
+  content: string;
+  color: string;
+}
+
 interface EditthongbaoProps {
-  notification: {
-    _id: string;
-    title: string;
-    content: string;
-    color: string;
-  };
+  notification: Notification;
   token: string;
   onClose: () => void;
-  onUpdate: (updatedNotification: any) => void;
+  onUpdate: (updatedNotification: Notification) => void;
 }
 
 export default function Editthongbao({
@@ -37,7 +39,7 @@ export default function Editthongbao({
     setLoading(true);
 
     try {
-      const updatedNotification = await editNotification(editData._id, editData, token);
+      const updatedNotification: Notification = await editNotification(editData._id, editData, token);
       toast.success("Thông báo đã được cập nhật thành công!");
       onUpdate(updatedNotification); // Cập nhật thông báo trong danh sách
       onClose(); // Đóng modal

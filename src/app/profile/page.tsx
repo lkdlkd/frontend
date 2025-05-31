@@ -2,9 +2,6 @@ import { cookies } from "next/headers";
 import { getMe } from "@/utils/api";
 import ProfileInfo from "@/app/profile/Profile";
 import ChangePasswordForm from "@/app/profile/ChangePasswordForm";
-import { User } from "@/types/index";
-
-// const cookies = require("js-cookie");
 
 export default async function ProfilePage() {
   const cookieStore = await cookies();
@@ -34,7 +31,7 @@ export default async function ProfilePage() {
                           <h5 className="card-title">Đổi mật khẩu</h5>
                         </div>
                         <div className="card-body">
-                          <ChangePasswordForm token = {token} userId={User.userId} />
+                          <ChangePasswordForm token={token} userId={User.userId} />
                         </div>
                       </div>
                     </div>

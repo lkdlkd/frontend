@@ -1,13 +1,19 @@
 import { useState, useEffect } from "react";
 
+interface Platform {
+  _id?: string; // ID có thể không tồn tại khi thêm mới
+  name: string; // Tên nền tảng
+  logo: string; // URL logo của nền tảng
+}
+
 interface PlatformModalProps {
-  platform?: any; // Nền tảng được chọn để chỉnh sửa (nếu có)
+  platform?: Platform; // Nền tảng được chọn để chỉnh sửa (nếu có)
   onClose: () => void; // Đóng modal
-  onSave: (platformData: any) => void; // Lưu dữ liệu nền tảng
+  onSave: (platformData: Platform) => void; // Lưu dữ liệu nền tảng
 }
 
 export default function PlatformModal({ platform, onClose, onSave }: PlatformModalProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Platform>({
     name: "",
     logo: "",
   });

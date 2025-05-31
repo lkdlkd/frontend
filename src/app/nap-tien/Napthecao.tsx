@@ -4,11 +4,17 @@ import React, { useState } from "react";
 import Swal from "sweetalert2";
 import { rechargeCard } from "@/utils/api";
 
+interface CardDataItem {
+  telco: string;
+  value: number;
+  fees: number;
+}
+
 export default function Napthecao({
   cardData,
   token,
 }: {
-  cardData: any[];
+  cardData: CardDataItem[];
   token: string | null;
 }) {
   const [cardInfo, setCardInfo] = useState({
@@ -73,13 +79,22 @@ export default function Napthecao({
         card_seri: "",
         card_code: "",
       });
-    } catch (error: any) {
-      Swal.fire({
-        title: "Lỗi",
-        text: error?.response?.data?.message || "Có lỗi xảy ra. Vui lòng thử lại!",
-        icon: "error",
-        confirmButtonText: "Xác nhận",
-      });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        Swal.fire({
+          title: "Lỗi",
+          text: error.message || "Có lỗi xảy ra. Vui lòng thử lại!",
+          icon: "error",
+          confirmButtonText: "Xác nhận",
+        });
+      } else {
+        Swal.fire({
+          title: "Lỗi",
+          text: "Có lỗi xảy ra. Vui lòng thử lại!",
+          icon: "error",
+          confirmButtonText: "Xác nhận",
+        });
+      }
     } finally {
       setLoading(false);
     }

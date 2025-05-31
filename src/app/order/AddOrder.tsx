@@ -3,8 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import Swal from "sweetalert2";
-import { addOrder, getUid } from "@/utils/api";
-import { useRouter } from "next/navigation";
+import { addOrder , getUid } from "@/utils/api";
 
 // Import `react-select` động
 const Select = dynamic(() => import("react-select"), { ssr: false });
@@ -41,20 +40,18 @@ const AddOrder: React.FC<AddOrderProps> = ({ server, token }) => {
     const [comments, setComments] = useState("");
     const [note, setNote] = useState("");
     const [totalCost, setTotalCost] = useState(0);
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [min, setMin] = useState(100);
     const [max, setMax] = useState(10000);
     const [rate, setRate] = useState(0);
-    const [cmtqlt, setcomputedQty] = useState(0);
-    const [isConverting, setIsConverting] = useState(false);
-    const router = useRouter();
-    const displayLink = convertedUID || rawLink;
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isConverting, setIsConverting] = useState(false); // Thêm state isConverting
 
+    const displayLink = convertedUID || rawLink;
 
     // Tính toán danh sách các loại nền tảng (Type) độc nhất chỉ một lần
     const uniqueTypes = useMemo(() => {
         return Array.from(new Set(server.map((server) => server.type)));
-    }, []); // Chỉ chạy một lần khi component được mount
+    }, [server]); // Thêm `server` vào dependencies
 
     // Tạo options cho react-select cho Type
     const typeOptions = useMemo(() => {
@@ -153,6 +150,8 @@ const AddOrder: React.FC<AddOrderProps> = ({ server, token }) => {
         }
 
         try {
+            setIsSubmitting(true); // Bắt đầu trạng thái xử lý
+
             const payload = {
                 link: finalLink,
                 category: selectedCategory ? selectedCategory.value : "",
@@ -161,14 +160,13 @@ const AddOrder: React.FC<AddOrderProps> = ({ server, token }) => {
                 quantity,
             };
 
-            const res = await addOrder(payload, token);
+            await addOrder(payload, token);
             Swal.fire({
                 title: "Thành công",
                 text: "Mua dịch vụ thành công",
                 icon: "success",
                 confirmButtonText: "Xác nhận",
             });
-
         } catch (error) {
             Swal.fire({
                 title: "Lỗi",
@@ -176,6 +174,26 @@ const AddOrder: React.FC<AddOrderProps> = ({ server, token }) => {
                 icon: "error",
                 confirmButtonText: "Xác nhận",
             });
+        } finally {
+            setIsSubmitting(false); // Kết thúc trạng thái xử lý
+        }
+    };
+
+    const handleConvertLink = async () => {
+        try {
+            setIsConverting(true); // Bắt đầu trạng thái xử lý
+            // Logic chuyển đổi link hoặc UID
+            const converted = await getUid(rawLink); // Giả sử bạn có hàm convertLink
+            setConvertedUID(converted);
+        } catch (error) {
+            Swal.fire({
+                title: "Lỗi",
+                text: "Không thể chuyển đổi link. Vui lòng thử lại!",
+                icon: "error",
+                confirmButtonText: "Xác nhận",
+            });
+        } finally {
+            setIsConverting(false); // Kết thúc trạng thái xử lý
         }
     };
 
@@ -227,6 +245,14 @@ const AddOrder: React.FC<AddOrderProps> = ({ server, token }) => {
                                 placeholder="Nhập link hoặc ID tùy các máy chủ"
                                 disabled={isConverting}
                             />
+                            <button
+                                type="button"
+                                className="btn btn-secondary mt-2"
+                                onClick={handleConvertLink}
+                                disabled={isConverting}
+                            >
+                                {isConverting ? "Đang chuyển đổi..." : "Chuyển đổi UID"}
+                            </button>
                         </div>
                         <h3>Danh sách dịch vụ</h3>
                         <div className="form-group mb-3">
