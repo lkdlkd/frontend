@@ -3,13 +3,7 @@ import { getUsers } from "@/utils/api";
 import TaiKhoan from "@/app/admin/tai-khoan/TaiKhoan";
 import { User } from "@/types/index";
 
-interface SearchParams {
-  page?: string;
-  limit?: string;
-  search?: string;
-}
-
-export default async function TaiKhoanPage({ searchParams }: { searchParams: SearchParams }) {
+export default async function TaiKhoanPage({ searchParams }: { searchParams: Record<string, string | undefined> }) {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value || "";
 
