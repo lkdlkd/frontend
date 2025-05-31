@@ -3,13 +3,15 @@ import { getUsers } from "@/utils/api";
 import TaiKhoan from "@/app/admin/tai-khoan/TaiKhoan";
 import { User } from "@/types/index";
 
-export default async function TaiKhoanPage({ searchParams }: { searchParams: URLSearchParams }) {
+export default async function TaiKhoanPage({ searchParams }: { searchParams: Record<string, string | undefined> }) {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value || "";
 
-  const page = Number(searchParams.get("page")) || 1;
-  const limit = Number(searchParams.get("limit")) || 10;
-  const search = searchParams.get("search") || "";
+  // Chuyển đổi searchParams thành URLSearchParams nếu cần
+  const params = new URLSearchParams(searchParams as Record<string, string>);
+  const page = Number(params.get("page")) || 1;
+  const limit = Number(params.get("limit")) || 10;
+  const search = params.get("search") || "";
 
   let users: User[] = [];
   let totalPages = 0; // Biến để lưu tổng số trang
