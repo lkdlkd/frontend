@@ -7,15 +7,13 @@ export default async function TaiKhoanPage({ searchParams }: { searchParams: Rec
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value || "";
 
-  // Chuyển đổi searchParams thành URLSearchParams nếu cần
-  const params = new URLSearchParams(searchParams as Record<string, string>);
-  const page = Number(params.get("page")) || 1;
-  const limit = Number(params.get("limit")) || 10;
-  const search = params.get("search") || "";
+  const page = Number(searchParams.page) || 1;
+  const limit = Number(searchParams.limit) || 10;
+  const search = searchParams.search || "";
 
   let users: User[] = [];
   let totalPages = 0; // Biến để lưu tổng số trang
-  const errorMessage = null;
+  let errorMessage: string | null = null;
 
   try {
     const userRes = await getUsers(token, page, limit, search);
@@ -24,8 +22,10 @@ export default async function TaiKhoanPage({ searchParams }: { searchParams: Rec
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error("Error fetching users:", error.message);
+      errorMessage = error.message;
     } else {
       console.error("Unknown error occurred while fetching users.");
+      errorMessage = "Unknown error occurred.";
     }
   }
 
