@@ -4,30 +4,32 @@ import { createBanking, updateBanking, deleteBanking } from "@/utils/api";
 import ModalBanking from "./ModalBanking";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
-import Table from "react-bootstrap/Table"; // Import Table từ react-bootstrap
+import Table from "react-bootstrap/Table";
+
+interface Bank {
+  _id: string;
+  bank_name: string;
+  account_name: string;
+  account_number: string;
+  logo: string;
+  bank_account: string;
+  min_recharge: number;
+  status: boolean;
+}
 
 interface BankingAdminProps {
-  banks: {
-    _id: string;
-    bank_name: string;
-    account_name: string;
-    account_number: string;
-    logo: string;
-    bank_account: string;
-    min_recharge: number;
-    status: boolean;
-  }[];
+  banks: Bank[];
   token: string;
 }
 
 export default function BankingAdmin({ banks, token }: BankingAdminProps) {
-  const [bankList, setBankList] = useState(banks);
-  const [editingBank, setEditingBank] = useState<any | null>(null);
+  const [bankList, setBankList] = useState<Bank[]>(banks);
+  const [editingBank, setEditingBank] = useState<Bank | null>(null);
   const [showModal, setShowModal] = useState(false);
 
-  const handleCreate = async (data: any) => {
+  const handleCreate = async (data: Omit<Bank, "_id">) => {
     try {
-      const newBank = await createBanking(data, token);
+      const newBank: Bank = await createBanking(data, token);
       setBankList((prev) => [...prev, newBank]);
       toast.success("Ngân hàng mới được tạo thành công!");
       setShowModal(false);
@@ -37,9 +39,9 @@ export default function BankingAdmin({ banks, token }: BankingAdminProps) {
     }
   };
 
-  const handleUpdate = async (id: string, data: any) => {
+  const handleUpdate = async (id: string, data: Partial<Bank>) => {
     try {
-      const updatedBank = await updateBanking(id, data, token);
+      const updatedBank: Bank = await updateBanking(id, data, token);
       setBankList((prev) =>
         prev.map((bank) => (bank._id === id ? updatedBank : bank))
       );
@@ -75,7 +77,7 @@ export default function BankingAdmin({ banks, token }: BankingAdminProps) {
     }
   };
 
-  const handleEditClick = (bank: any) => {
+  const handleEditClick = (bank: Bank) => {
     setEditingBank(bank);
     setShowModal(true);
   };
@@ -87,31 +89,29 @@ export default function BankingAdmin({ banks, token }: BankingAdminProps) {
 
   return (
     <div className="container mt-5">
-      {/* Modal thêm/sửa ngân hàng */}
       {showModal && (
         <ModalBanking
           token={token}
           editing={!!editingBank}
           formData={editingBank || {}}
-          handleChange={(e) => {
-            const { name, value, type, checked } = e.target as HTMLInputElement;
-            setEditingBank((prev: any) => ({
+          handleChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            const { name, value, type, checked } = e.target;
+            setEditingBank((prev) => ({
               ...prev,
               [name]: type === "checkbox" ? checked : value,
             }));
           }}
-          handleSubmit={(e) => {
+          handleSubmit={(e: React.FormEvent<HTMLFormElement>) => {
             e.preventDefault();
             if (editingBank?._id) {
               handleUpdate(editingBank._id, editingBank);
             } else {
-              handleCreate(editingBank);
+              handleCreate(editingBank as Omit<Bank, "_id">);
             }
           }}
         />
       )}
 
-      {/* Danh sách ngân hàng */}
       <div className="card shadow-sm">
         <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
           <h4 className="mb-0">Danh sách ngân hàng</h4>
@@ -125,7 +125,6 @@ export default function BankingAdmin({ banks, token }: BankingAdminProps) {
               <thead className="table-primary">
                 <tr>
                   <th>Hành động</th>
-
                   <th>Ngân Hàng</th>
                   <th>Tên chủ tài khoản</th>
                   <th>Số tài khoản</th>
@@ -165,7 +164,6 @@ export default function BankingAdmin({ banks, token }: BankingAdminProps) {
                     <td>{bank.bank_account}</td>
                     <td>{bank.min_recharge.toLocaleString("en-US")}</td>
                     <td>{bank.status ? "Hoạt động" : "Ngưng hoạt động"}</td>
-
                   </tr>
                 ))}
               </tbody>

@@ -7,7 +7,7 @@ const withNoStore = (headers = {}) => ({
   ...headers,
   "Cache-Control": "no-store",
 });
-
+console.log(API_BASE)
 // Helper để xử lý response
 const handleResponse = async (response) => {
   if (!response.ok) {
