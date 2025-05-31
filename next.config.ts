@@ -19,7 +19,7 @@ const nextConfig: NextConfig = {
       "upload.wikimedia.org",
       "encrypted-tbn0.gstatic.com",
       "cdn.example.org",
-      "images.example.net",
+      "i.imgur.com",
     ], // Thêm tất cả các domain tại đây
   },
 };

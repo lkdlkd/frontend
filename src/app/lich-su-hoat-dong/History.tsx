@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Table from "react-bootstrap/Table";
+import { getUserHistory } from "@/utils/api";
 
 interface HistoryItem {
   _id: string;
@@ -17,46 +18,83 @@ interface HistoryItem {
 }
 
 interface HistoryProps {
+  token: string;
   role: string;
-  currentPage: number;
-  limit: number;
-  historyData: HistoryItem[];
-  totalPages: number;
 }
 
-export default function History({
-  role,
-  currentPage,
-  limit,
-  historyData,
-  totalPages,
-}: HistoryProps) {
-  const [page, setPage] = useState(currentPage);
+export default function History({ token, role }: HistoryProps) {
+  const [historyData, setHistoryData] = useState<HistoryItem[]>([]);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [orderIdSearch, setOrderIdSearch] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [debouncedOrderIdSearch, setDebouncedOrderIdSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Debounce logic cho `searchQuery` và `orderIdSearch`
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+      setDebouncedOrderIdSearch(orderIdSearch);
+    }, 3000);
+
+    return () => {
+      clearTimeout(handler); // Xóa timeout nếu người dùng tiếp tục nhập
+    };
+  }, [searchQuery, orderIdSearch]);
+
+  // Gọi API để lấy dữ liệu lịch sử
+  useEffect(() => {
+    const fetchHistory = async () => {
+      setLoading(true);
+      try {
+        const response = await getUserHistory(
+          token,
+          page,
+          limit,
+          debouncedOrderIdSearch,
+          debouncedSearchQuery
+        );
+        setHistoryData(response.history || []);
+        setTotalPages(response.totalPages || 1);
+        setErrorMessage(null);
+      } catch (error) {
+        console.error("Error fetching history:", error);
+        setErrorMessage("Không thể tải dữ liệu lịch sử hoạt động.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHistory();
+  }, [token, page, limit, debouncedSearchQuery, debouncedOrderIdSearch]);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    const url = new URL(window.location.href);
-    url.searchParams.set("page", newPage.toString());
-    window.location.href = url.toString();
   };
 
   const handleSearch = () => {
-    const url = new URL(window.location.href);
-    url.searchParams.set("search", searchQuery);
-    url.searchParams.set("orderId", orderIdSearch);
-    url.searchParams.set("page", "1"); // Reset về trang đầu tiên
-    window.location.href = url.toString();
+    setDebouncedSearchQuery(searchQuery); // Gọi API ngay lập tức
+    setDebouncedOrderIdSearch(orderIdSearch); // Gọi API ngay lập tức
+    setPage(1); // Reset về trang đầu tiên
   };
 
   const handleLimitChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLimit = e.target.value;
-    const url = new URL(window.location.href);
-    url.searchParams.set("limit", newLimit);
-    url.searchParams.set("page", "1"); // Reset về trang đầu tiên
-    window.location.href = url.toString();
+    setLimit(parseInt(newLimit, 10));
+    setPage(1); // Reset về trang đầu tiên
   };
+
+  if (loading) {
+    return <div>Đang tải...</div>;
+  }
+
+  if (errorMessage) {
+    return <div className="alert alert-danger">{errorMessage}</div>;
+  }
 
   return (
     <div className="row">

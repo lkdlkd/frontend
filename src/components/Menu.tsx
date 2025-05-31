@@ -205,6 +205,25 @@ function MenuUser({ user, categories }: { user: User | null; categories: Categor
             <li className="pc-item pc-caption">
               <label>Danh Sách Dịch Vụ</label>
             </li>
+            <li className="pc-item pc-hasmenu">
+              <Link href="/order" className="pc-link">
+                <span className="pc-micon">
+                  <Image src="https://i.imgur.com/LtJfhAt.gif" className="wid-35" alt="" width={35} height={35} priority />
+                </span>
+                <span className="pc-mtext">Mua dịch vụ</span>
+              </Link>
+            </li>
+            <li className="pc-item">
+              <Link href="/danh-sach-don" className="pc-link">
+                <span className="pc-micon">
+                  <Image src="/transactions.png" className="wid-35" alt="" width={35} height={35} priority />
+                </span>
+                <span className="pc-mtext">Lịch Sử Hoạt Động</span>
+              </Link>
+            </li>
+            <li className="pc-item pc-caption">
+              <label>Danh Sách Dịch Vụ</label>
+            </li>
             {Object.values(groupedCategories).map((group) => (
               <li key={group.platform._id} className="pc-item pc-hasmenu">
                 <a

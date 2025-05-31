@@ -9,6 +9,15 @@
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
+.pc-sidebar {
+  height: 100vh; /* Chiều cao toàn màn hình */
+  overflow-y: auto; /* Cho phép cuộn dọc */
+}
+
+.pc-sidebar .navbar-content {
+  max-height: calc(100vh - 50px); /* Trừ đi chiều cao header nếu có */
+  overflow-y: auto; /* Cho phép cuộn dọc */
+}
 
 @keyframes spin {
   from {

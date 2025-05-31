@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import Table from "react-bootstrap/Table";
+import { getServer, getOrders } from "@/utils/api";
 
 // Import `react-select` chỉ trên client
 const Select = dynamic(() => import("react-select"), { ssr: false });
@@ -28,31 +29,55 @@ interface Order {
   note?: string;
   createdAt: string;
 }
-interface HistoryOrderProps {
-  servers: Server[];
-  orders: Order[];
-  initialPage: number;
-  totalPages: number;
-  initialLimit: number;
-  error?: string | null; // Thêm thuộc tính error
-}
 
-export default function HistoryOrder({
-  servers,
-  orders,
-  initialPage,
-  totalPages,
-  initialLimit,
-  error,
-}: HistoryOrderProps) {
-  const [ordersState] = useState(orders);
-  const [page, setPage] = useState(initialPage);
-  const [limit, setLimit] = useState(initialLimit);
+export default function HistoryOrder({ token }: { token: string }) {
+  const [servers, setServers] = useState<Server[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<{ value: string; label: string } | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<{ value: string; label: string } | null>(
     null
   );
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Gọi API để lấy danh sách servers
+  useEffect(() => {
+    const fetchServers = async () => {
+      try {
+        const serversData = await getServer(token);
+        setServers(serversData.data || []);
+      } catch (error) {
+        console.error("Error fetching servers:", error);
+        setErrorMessage("Không thể tải danh sách servers.");
+      }
+    };
+
+    fetchServers();
+  }, [token]);
+
+  // Gọi API để lấy danh sách orders
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setLoading(true);
+      try {
+        const ordersData = await getOrders(token, page, limit,selectedCategory?.value, searchQuery);
+        setOrders(ordersData.orders || []);
+        setTotalPages(ordersData.totalPages || 1);
+        setErrorMessage(null);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+        setErrorMessage("Không thể tải danh sách đơn hàng.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, [token, page, limit, searchQuery, selectedCategory]);
 
   // Tính toán typeOptions chỉ một lần
   const typeOptions = useMemo(() => {
@@ -78,35 +103,16 @@ export default function HistoryOrder({
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    const url = new URL(window.location.href);
-    url.searchParams.set("page", newPage.toString());
-    if (selectedCategory) {
-      url.searchParams.set("category", selectedCategory.value);
-    }
-    window.location.href = url.toString();
   };
 
   const handleSearch = () => {
-    const cleanedSearchQuery = searchQuery.trim().replace(/\s+/g, ""); // Loại bỏ khoảng trắng
-    const url = new URL(window.location.href);
-    url.searchParams.set("search", encodeURIComponent(cleanedSearchQuery));
-    if (selectedCategory) {
-      url.searchParams.set("category", selectedCategory.value);
-    }
-    url.searchParams.set("page", "1"); // Reset về trang đầu tiên
-    window.location.href = url.toString();
+    setPage(1); // Reset về trang đầu tiên
   };
 
   const handleLimitChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLimit = e.target.value;
     setLimit(parseInt(newLimit, 10));
-    const url = new URL(window.location.href);
-    url.searchParams.set("limit", newLimit);
-    if (selectedCategory) {
-      url.searchParams.set("category", selectedCategory.value);
-    }
-    url.searchParams.set("page", "1"); // Reset về trang đầu tiên
-    window.location.href = url.toString();
+    setPage(1); // Reset về trang đầu tiên
   };
 
   const handleTypeChange = (selected: { value: string; label: string } | null) => {
@@ -118,14 +124,14 @@ export default function HistoryOrder({
     setSelectedCategory(selected);
   };
 
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    const searchParam = url.searchParams.get("search") || "";
-    const cleanedSearchParam = decodeURIComponent(searchParam).trim().replace(/\s+/g, "");
-    setSearchQuery(cleanedSearchParam); // Cập nhật giá trị tìm kiếm đã làm sạch
-  }, []);
+  if (loading) {
+    return <div>Đang tải...</div>;
+  }
 
-  // Hiển thị dữ liệu nếu không có lỗi
+  if (errorMessage) {
+    return <div className="alert alert-danger">{errorMessage}</div>;
+  }
+
   return (
     <div className="row">
       <div className="col-md-12">
@@ -215,7 +221,7 @@ export default function HistoryOrder({
 
               {/* Hiển thị bảng đơn hàng */}
               <div className="table-responsive">
-                {ordersState && ordersState.length > 0 ? (
+                {orders && orders.length > 0 ? (
                   <Table striped bordered hover>
                     <thead>
                       <tr>
@@ -238,7 +244,7 @@ export default function HistoryOrder({
                       </tr>
                     </thead>
                     <tbody>
-                      {ordersState.map((order, index) => (
+                      {orders.map((order, index) => (
                         <tr key={index}>
                           <td>{(page - 1) * limit + index + 1}</td>
                           <td>{order.Madon}</td>
@@ -317,21 +323,15 @@ export default function HistoryOrder({
                   </Table>
                 ) : (
                   <p className="text-center text-muted">
-                    {error ? (
-                      <div className="alert alert-danger text-center" role="alert">
-                        {error}
-                      </div>
-                    ) : (
-                      <div className="alert alert-danger text-center" role="alert">
-                        Không có dữ liệu đơn hàng nào để hiển thị.
-                      </div>
-                    )}
+                    <div className="alert alert-danger text-center" role="alert">
+                      Không có dữ liệu đơn hàng nào để hiển thị.
+                    </div>
                   </p>
                 )}
               </div>
 
               {/* Phân trang */}
-              {ordersState.length > 0 && (
+              {orders.length > 0 && (
                 <div className="pagination d-flex justify-content-between align-items-center mt-3">
                   <button
                     className="btn btn-secondary"
