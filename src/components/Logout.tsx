@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-const Cookies = require("js-cookie");
+import Cookies from "js-cookie"; // Sử dụng cú pháp import
 
 export default function Logout() {
   const router = useRouter();
@@ -10,13 +10,13 @@ export default function Logout() {
 
   const handleLogout = () => {
     setIsLoading(true);
-    
+
     // Xóa token từ cookie
     Cookies.remove("token");
     localStorage.removeItem("notiModalLastClosed"); // Xóa token khỏi localStorage nếu có
     // Các cookie khác nếu cần
     // Cookies.remove("user");
-    
+
     // Chuyển hướng về trang đăng nhập
     setTimeout(() => {
       router.push("/dang-nhap");
@@ -25,8 +25,8 @@ export default function Logout() {
   };
 
   return (
-    <a 
-      href="#" 
+    <a
+      href="#"
       onClick={(e) => {
         e.preventDefault();
         handleLogout();

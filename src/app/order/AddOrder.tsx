@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import Swal from "sweetalert2";
-import { addOrder , getUid } from "@/utils/api";
+import { addOrder, getUid } from "@/utils/api";
 
 // Import `react-select` động
 const Select = dynamic(() => import("react-select"), { ssr: false });
@@ -185,7 +185,7 @@ const AddOrder: React.FC<AddOrderProps> = ({ server, token }) => {
             // Logic chuyển đổi link hoặc UID
             const converted = await getUid(rawLink); // Giả sử bạn có hàm convertLink
             setConvertedUID(converted);
-        } catch (error) {
+        } catch {
             Swal.fire({
                 title: "Lỗi",
                 text: "Không thể chuyển đổi link. Vui lòng thử lại!",

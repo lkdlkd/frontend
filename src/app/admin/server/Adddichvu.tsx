@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createServer, updateServer, getAllSmmPartners } from "@/utils/api";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -170,8 +170,12 @@ export default function Adddichvu({
     setLoading(true);
     try {
       if (editMode) {
-        await updateServer(initialData?._id!, formData, token);
-        toast.success("Dịch vụ đã được cập nhật thành công!");
+        if (initialData?._id) {
+          await updateServer(initialData._id, formData, token);
+          toast.success("Dịch vụ đã được cập nhật thành công!");
+        } else {
+          throw new Error("ID không hợp lệ để cập nhật dịch vụ.");
+        }
       } else {
         await createServer(formData, token);
         toast.success("Dịch vụ mới đã được thêm thành công!");

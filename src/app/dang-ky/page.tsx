@@ -33,11 +33,11 @@ export default function DangKyPage() {
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
-        setError(
-          (err as any)?.response?.data?.error || // Lỗi từ API
-          err.message || // Lỗi từ JavaScript
-          "Có lỗi xảy ra. Vui lòng thử lại."
-        );
+        const errorMessage =
+          (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
+          err.message ||
+          "Có lỗi xảy ra. Vui lòng thử lại.";
+        setError(errorMessage);
       } else {
         setError("Có lỗi xảy ra. Vui lòng thử lại.");
       }

@@ -5,6 +5,7 @@ import ModalBanking from "./ModalBanking";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import Table from "react-bootstrap/Table";
+import Image from "next/image"; // Import Image từ next/image
 
 interface Bank {
   _id: string;
@@ -155,10 +156,13 @@ export default function BankingAdmin({ banks, token }: BankingAdminProps) {
                     <td>{bank.account_name}</td>
                     <td>{bank.account_number}</td>
                     <td>
-                      <img
+                      <Image
                         src={bank.logo}
                         alt="Logo"
-                        style={{ width: "50px", height: "50px" }}
+                        width={50}
+                        height={50}
+                        style={{ objectFit: "contain" }}
+                        priority
                       />
                     </td>
                     <td>{bank.bank_account}</td>
