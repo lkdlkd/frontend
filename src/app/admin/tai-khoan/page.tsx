@@ -1,15 +1,9 @@
 import { cookies } from "next/headers";
-import { getUsers } from "@/utils/api";
 import TaiKhoan from "@/app/admin/tai-khoan/TaiKhoan";
-import { User } from "@/types/index";
 
-interface SearchParams {
-  page?: string;
-  limit?: string;
-  search?: string;
-}
 
-export default async function TaiKhoanPage({ searchParams }: { searchParams: SearchParams }) {
+
+export default async function TaiKhoanPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value || "";
 
@@ -18,7 +12,7 @@ export default async function TaiKhoanPage({ searchParams }: { searchParams: Sea
   return (
     <TaiKhoan
       token={token}
-    
+
     />
   );
 }

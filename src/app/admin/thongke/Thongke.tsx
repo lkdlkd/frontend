@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { getStatistics } from "@/utils/api";
 
 interface Statistics {
@@ -16,8 +15,6 @@ interface Statistics {
 }
 
 export default function ThongKe({ token }: { token: string }) {
-  const router = useRouter();
-
   const [statistics, setStatistics] = useState<Statistics | null>(null);
   const [napRange, setNapRange] = useState("today");
   const [doanhthuRange, setDoanhthuRange] = useState("today");
