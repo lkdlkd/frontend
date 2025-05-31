@@ -2,71 +2,85 @@
 
 import React, { useState, useEffect } from "react";
 import { User } from "@/types/index";
-import { deleteUser } from "@/utils/api";
+import { getUsers, deleteUser } from "@/utils/api";
 import Swal from "sweetalert2";
 import UserEdit from "@/app/admin/tai-khoan/UserEdit";
 import AddBalanceForm from "@/app/admin/tai-khoan/AddBalanceForm";
 import DeductBalanceForm from "@/app/admin/tai-khoan/DeductBalanceForm";
-import Table from "react-bootstrap/Table"; // Import Table từ react-bootstrap
+import Table from "react-bootstrap/Table";
 
 interface TaiKhoanProps {
   token: string;
-  users: User[];
-  limit: number;
-  search: string;
-  page: number;
-  totalPages: number;
-  error?: string | null;
 }
 
-export default function TaiKhoan({
-  token,
-  users,
-  limit: initialLimit,
-  search,
-  totalPages,
-  page: initialPage,
-  error,
-}: TaiKhoanProps) {
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-  const [searchQuery, setSearchQuery] = useState(search);
-  const [page, setPage] = useState(initialPage);
-  const [limit, setLimit] = useState(initialLimit);
+export default function TaiKhoan({ token }: TaiKhoanProps) {
+  const [users, setUsers] = useState<User[]>([]);
+  const [totalPages, setTotalPages] = useState(0);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(""); // Giá trị debounce
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [deductUser, setDeductUser] = useState<User | null>(null);
   const [balanceUser, setBalanceUser] = useState<User | null>(null);
 
+  // Debounce logic: Cập nhật `debouncedSearchQuery` sau 3 giây
   useEffect(() => {
-    setFilteredUsers(users); // Sử dụng trực tiếp dữ liệu từ API
-  }, [users]);
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 3000);
 
-  // Hàm cập nhật danh sách người dùng
+    return () => {
+      clearTimeout(handler); // Xóa timeout nếu `searchQuery` thay đổi trước khi hết 3 giây
+    };
+  }, [searchQuery]);
+
+  // Gọi API để lấy danh sách người dùng
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const userRes = await getUsers(token, page, limit, debouncedSearchQuery);
+        setUsers(userRes.users || []);
+        setTotalPages(userRes.totalPages || 1);
+        setErrorMessage(null);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.error("Error fetching users:", error.message);
+          setErrorMessage(error.message);
+        } else {
+          console.error("Unknown error occurred while fetching users.");
+          setErrorMessage("Unknown error occurred.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, [token, page, limit, debouncedSearchQuery]);
+
+  // Hàm cập nhật danh sách người dùng sau khi sửa
   const handleUserUpdated = (updatedUser: User) => {
-    setFilteredUsers((prevUsers) =>
+    setUsers((prevUsers) =>
       prevUsers.map((user) => (user._id === updatedUser._id ? updatedUser : user))
     );
   };
 
-  // Hàm cập nhật URL mà không tải lại trang
-  const updateUrlParams = (params: Record<string, string>) => {
-    const url = new URL(window.location.href);
-    Object.entries(params).forEach(([key, value]) => {
-      url.searchParams.set(key, value);
-    });
-    window.location.href = url.toString(); // Tải lại trang với URL mới
+  // Hàm xử lý tìm kiếm ngay lập tức khi ấn nút
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setDebouncedSearchQuery(searchQuery); // Cập nhật giá trị debounce ngay lập tức
+    setPage(1); // Reset về trang đầu tiên
   };
 
   // Hàm xử lý chuyển trang
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    updateUrlParams({ page: newPage.toString() });
-  };
-
-  // Hàm xử lý tìm kiếm
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPage(1); // Reset về trang đầu tiên
-    updateUrlParams({ search: searchQuery, page: "1" });
   };
 
   // Hàm xử lý thay đổi số lượng hiển thị (limit)
@@ -74,7 +88,6 @@ export default function TaiKhoan({
     const newLimit = parseInt(e.target.value, 10);
     setLimit(newLimit);
     setPage(1); // Reset về trang đầu tiên
-    updateUrlParams({ limit: newLimit.toString(), page: "1" });
   };
 
   // Hàm xử lý xóa người dùng
@@ -91,11 +104,9 @@ export default function TaiKhoan({
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          // Gọi API xóa người dùng
           await deleteUser(userId, token);
           Swal.fire("Đã xóa!", "Người dùng đã được xóa thành công.", "success");
-          // Cập nhật lại danh sách người dùng sau khi xóa
-          setFilteredUsers((prevUsers) => prevUsers.filter((user) => user._id !== userId));
+          setUsers((prevUsers) => prevUsers.filter((user) => user._id !== userId));
         } catch (error) {
           console.error("Lỗi khi xóa người dùng:", error);
           Swal.fire("Lỗi!", "Không thể xóa người dùng. Vui lòng thử lại.", "error");
@@ -104,6 +115,14 @@ export default function TaiKhoan({
     });
   };
 
+  if (loading) {
+    return <div>Đang tải...</div>;
+  }
+
+  if (errorMessage) {
+    return <div className="alert alert-danger">{errorMessage}</div>;
+  }
+
   return (
     <div className="container mt-5">
       <div className="card shadow-sm">
@@ -111,13 +130,6 @@ export default function TaiKhoan({
           <h4 className="mb-0">Danh sách Người dùng</h4>
         </div>
         <div className="card-body">
-          {/* Hiển thị lỗi nếu có */}
-          {error && (
-            <div className="alert alert-danger" role="alert">
-              {error}
-            </div>
-          )}
-
           {/* Ô tìm kiếm */}
           <form onSubmit={handleSearch} className="mb-4">
             <div className="row g-2">
@@ -168,7 +180,7 @@ export default function TaiKhoan({
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map((user, index) => (
+                {users.map((user, index) => (
                   <tr key={user._id}>
                     <td>{(page - 1) * limit + index + 1}</td>
                     <td>
@@ -262,7 +274,7 @@ export default function TaiKhoan({
           user={editingUser}
           token={token}
           onClose={() => setEditingUser(null)}
-          onUserUpdated={handleUserUpdated} // Cập nhật danh sách sau khi sửa
+          onUserUpdated={handleUserUpdated}
         />
       )}
       {deductUser && (
@@ -270,7 +282,7 @@ export default function TaiKhoan({
           token={token}
           user={deductUser}
           onClose={() => setDeductUser(null)}
-          onUserUpdated={handleUserUpdated} // Cập nhật danh sách sau khi trừ tiền
+          onUserUpdated={handleUserUpdated}
         />
       )}
       {balanceUser && (
@@ -278,7 +290,7 @@ export default function TaiKhoan({
           token={token}
           user={balanceUser}
           onClose={() => setBalanceUser(null)}
-          onUserUpdated={handleUserUpdated} // Cập nhật danh sách sau khi cộng tiền
+          onUserUpdated={handleUserUpdated}
         />
       )}
     </div>
